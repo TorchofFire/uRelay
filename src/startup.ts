@@ -88,5 +88,7 @@ export const startup = async (): Promise<void> => {
 
     await startExpress();
 
-    startWebSocket();
+    server.on('listening', () => {
+        startWebSocket();
+    });
 };

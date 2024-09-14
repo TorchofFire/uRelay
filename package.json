@@ -5,7 +5,8 @@
   "author": "Torch",
   "license": "MIT",
   "scripts": {
-    "dev": "nodemon src/main.ts"
+    "dev": "nodemon src/main.ts",
+    "build": "tsc"
   },
   "dependencies": {
     "dotenv": "^16.4.5",
