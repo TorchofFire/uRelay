@@ -10,7 +10,13 @@ export namespace WSPackets {
         type: 'server_handshake';
         name: string;
         publicKey: string;
-        proof: string; // signed timestamp expected
+        proof: string;
+        /*
+        proof is timestamp with server id signed.
+        example of decoded: 1727379076|ipOrDomain
+        "|" being a delimiter.
+        The server id is important so the handshake is server specific and cannot be replayed elsewhere.
+        */
     }
 
     export interface Profile extends Packet {

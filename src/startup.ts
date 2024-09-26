@@ -10,8 +10,6 @@ import { guildService } from './services/guild.service';
 import { connectionManagerService } from './services/connectionManager.service';
 
 // eslint-disable-next-line import/no-mutable-exports
-export let wss: WebSocketServer;
-// eslint-disable-next-line import/no-mutable-exports
 export let expressApp: express.Express;
 // eslint-disable-next-line import/no-mutable-exports
 export let dbConnectionPool: mysql.Pool;
@@ -37,7 +35,7 @@ const registerExpressRoutes = async (): Promise<void> => {
 let server: http.Server | https.Server;
 
 const startWebSocket = (): void => {
-    wss = new WebSocketServer({ server });
+    const wss = new WebSocketServer({ server });
     wss.on('connection', ws => { connectionManagerService.handleConnection(ws); });
     console.log('\x1b[36mWebSocketServer is online\x1b[0m');
 };

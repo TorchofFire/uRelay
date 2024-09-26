@@ -6,6 +6,7 @@ import { guildService } from './guild.service';
 import { dbConnectionPool } from '../startup';
 import { ResultSetHeader } from 'mysql2/promise';
 import { connectionManagerService } from './connectionManager.service';
+import appConfig from '../app.config';
 
 class MessageManagerService {
 
@@ -42,7 +43,7 @@ class MessageManagerService {
         await this.sendPacketToAllConnections({ ...packet, id: messageId });
     }
 
-    public async handshake(data: WebSocket.RawData): Promise<number | null> {
+    public async handshake(data: WebSocket.RawData): Promise<number | null> { // TODO: send error messages to client
         if (!Buffer.isBuffer(data)) return null;
         const packet = JSON.parse(data.toString());
         if (!WSPackets.isPacket(packet, 'server_handshake')) return null;
@@ -50,12 +51,15 @@ class MessageManagerService {
         const publicKey: Uint8Array = sodium.from_base64(packet.publicKey);
         const message: Uint8Array = sodium.from_base64(packet.proof);
 
-        const timestampToVerify = Number(sodium.to_string(sodium.crypto_sign_open(message, publicKey)));
-        if (Number.isNaN(timestampToVerify)) return null;
+        const unlockedMessage = sodium.to_string(sodium.crypto_sign_open(message, publicKey));
+        const [stringTimestamp, serverId] = unlockedMessage.split('|');
 
-        const timestamp = moment.unix(timestampToVerify);
+        if (serverId !== appConfig.serverName) return null;
+
+        if (Number.isNaN(Number(stringTimestamp))) return null;
+        const timestamp = moment.unix(Number(stringTimestamp));
         const now = moment();
-        if (now.diff(timestamp, 'seconds') > 30 || timestamp.isAfter(now)) return null;
+        if (now.diff(timestamp, 'seconds') > 30) return null;
 
         const user = guildService.users.find(x => x.public_key === packet.publicKey);
         if (user) return user.id;

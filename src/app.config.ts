@@ -2,6 +2,7 @@ import 'dotenv/config';
 
 const appConfig = {
     debug: process.env.DEBUG === 'true',
+    serverName: process.env.SERVER_NAME,
     secureProtocol: process.env.SECURE_PROTOCOL === 'true',
     certPath: process.env.SSL_PATH,
     appPort: Number(process.env.APP_PORT || 8079),
