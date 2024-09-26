@@ -12,10 +12,10 @@ class ConnectionManagerService {
         this.connectionMap.set(userId, ws);
     }
 
-    private removeConnection(userId: number): void {
+    private removeConnection(userId: number, reason?: string): void {
         const removedConnection = this.connectionMap.get(userId);
         if (!removedConnection) return;
-        if (removedConnection.OPEN) removedConnection.close(1000);
+        if (removedConnection.OPEN) removedConnection.close(1000, reason);
         this.connections = this.connections.filter(connection => connection !== removedConnection);
         this.connectionMap.delete(userId);
     }
@@ -26,17 +26,19 @@ class ConnectionManagerService {
 
         ws.on('message', async message => {
             if (!firstPacketRecieved) {
-                userId = await messageManagerService.handshake(message);
-                if (!userId) {
-                    ws.close();
+                const hsResponse = await messageManagerService.handshake(message);
+                if (!hsResponse.userId) {
+                    ws.close(1000, hsResponse.errorMessage);
                     return;
                 }
+                userId = hsResponse.userId;
                 this.addNewConnection(userId, ws);
                 guildService.sendServerInfo(ws);
                 firstPacketRecieved = true;
                 return;
             }
-            messageManagerService.handle(message);
+            if (!userId) return;
+            messageManagerService.handle(message, userId);
         });
 
         ws.on('close', () => { if (userId) this.removeConnection(userId); });

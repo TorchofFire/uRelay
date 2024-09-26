@@ -54,12 +54,20 @@ export namespace WSPackets {
         }[];
     }
 
+    export interface SystemMessage extends Packet {
+        type: 'system_message';
+        severity: 'info' | 'warning' | 'danger';
+        message: string;
+        channelId?: number;
+    }
+
     interface PacketMap {
         server_handshake: ServerHandshake;
         profile: Profile;
         guild_message: GuildMessage;
         channel_info: ChannelInfo;
         server_info: ServerInfo;
+        system_message: SystemMessage;
     }
 
     export function isPacket<T extends keyof PacketMap>(packet: Packet, type: T): packet is PacketMap[T] {

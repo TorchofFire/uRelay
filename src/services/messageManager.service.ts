@@ -10,11 +10,24 @@ import appConfig from '../app.config';
 
 class MessageManagerService {
 
-    public async handle(data: WebSocket.RawData): Promise<void> {
-        if (!Buffer.isBuffer(data)) return; // always expecting type Buffer
+    private sendError(userId: number, packet: WSPackets.SystemMessage): void {
+        const ws = connectionManagerService.connectionMap.get(userId);
+        if (!ws) return;
+        ws.send(JSON.stringify(packet));
+    }
+
+    public async handle(data: WebSocket.RawData, userId: number): Promise<void> {
+        if (!Buffer.isBuffer(data)) {
+            this.sendError(userId, {
+                type: 'system_message',
+                severity: 'danger',
+                message: 'Expected a buffer. The last packet sent has been discarded.'
+            });
+            return;
+        } // always expecting type Buffer
         const packet = JSON.parse(data.toString());
 
-        if (WSPackets.isPacket(packet, 'guild_message')) await this.handleGuildMessage(packet);
+        if (WSPackets.isPacket(packet, 'guild_message')) await this.handleGuildMessage(packet, userId);
     }
 
     private async sendPacketToAllConnections(packet: WSPackets.Packet): Promise<void> {
@@ -25,9 +38,16 @@ class MessageManagerService {
         );
     }
 
-    private async handleGuildMessage(packet: WSPackets.GuildMessage): Promise<void> {
+    private async handleGuildMessage(packet: WSPackets.GuildMessage, userId: number): Promise<void> {
         const channel = guildService.channels.find(x => x.id === packet.channelId);
-        if (!channel) return;
+        if (!channel) {
+            this.sendError(userId, {
+                type: 'system_message',
+                severity: 'warning',
+                message: 'This channel appears to no longer exist'
+            });
+            return;
+        }
 
         // TODO: verify sig and reject timestamps within msgs that are too old
 
@@ -43,10 +63,10 @@ class MessageManagerService {
         await this.sendPacketToAllConnections({ ...packet, id: messageId });
     }
 
-    public async handshake(data: WebSocket.RawData): Promise<number | null> { // TODO: send error messages to client
-        if (!Buffer.isBuffer(data)) return null;
+    public async handshake(data: WebSocket.RawData): Promise<{userId?: number; errorMessage?: string}> {
+        if (!Buffer.isBuffer(data)) return { errorMessage: 'Expected a buffer.' };
         const packet = JSON.parse(data.toString());
-        if (!WSPackets.isPacket(packet, 'server_handshake')) return null;
+        if (!WSPackets.isPacket(packet, 'server_handshake')) return { errorMessage: 'Expected a handshake.' };
 
         const publicKey: Uint8Array = sodium.from_base64(packet.publicKey);
         const message: Uint8Array = sodium.from_base64(packet.proof);
@@ -54,15 +74,15 @@ class MessageManagerService {
         const unlockedMessage = sodium.to_string(sodium.crypto_sign_open(message, publicKey));
         const [stringTimestamp, serverId] = unlockedMessage.split('|');
 
-        if (serverId !== appConfig.serverName) return null;
+        if (serverId !== appConfig.serverName) return { errorMessage: `Expected a server identifier. Looking for "${appConfig.serverName}", instead got "${serverId}". Format is timestamp|serverId.` };
 
-        if (Number.isNaN(Number(stringTimestamp))) return null;
+        if (Number.isNaN(Number(stringTimestamp))) return { errorMessage: 'Expected a unix timestamp. Format is timestamp|serverId' };
         const timestamp = moment.unix(Number(stringTimestamp));
         const now = moment();
-        if (now.diff(timestamp, 'seconds') > 30) return null;
+        if (now.diff(timestamp, 'seconds') > 30) return { errorMessage: 'The timestamp recieved falls outside the expected range. Check that your computer clock is correct.' };
 
         const user = guildService.users.find(x => x.public_key === packet.publicKey);
-        if (user) return user.id;
+        if (user) return { userId: user.id };
 
         // New user. Add to DB and give resulting id.
 
@@ -90,7 +110,7 @@ class MessageManagerService {
         await this.sendPacketToAllConnections(profilePacket);
         // note: didn't send to this connection (intended)
 
-        return userId;
+        return { userId };
     }
 
 }
