@@ -31,7 +31,7 @@ class GuildService {
 
     public sendServerInfo(ws: WebSocket): void {
         const serverInfoPacket: WSPackets.ServerInfo = {
-            type: 'server_info',
+            packet_type: 'server_info',
             channels: this.channels,
             profiles: this.users.map(user => { return { id: user.id, name: user.name, publicKey: user.public_key }; })
         };

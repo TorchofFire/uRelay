@@ -87,7 +87,7 @@ class MessageManagerService {
         // New user. Add to DB and give resulting id.
 
         const userInsert = `
-        INSERT INTO users (public_key, name) 
+        INSERT INTO users (public_key, name)
         VALUES (?, ?);
         `;
         const [result] = await dbConnectionPool.query<ResultSetHeader>(userInsert, [packet.public_key, packet.name]);
