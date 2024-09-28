@@ -24,7 +24,8 @@ DELIMITER ;
 
 CREATE TABLE `guild_channels` (
     `id` BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    `name` VARCHAR(255) NOT NULL
+    `name` VARCHAR(255) NOT NULL,
+    `channel_type` VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE `guild_messages` (
