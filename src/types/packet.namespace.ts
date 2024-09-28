@@ -2,47 +2,50 @@
 export namespace WSPackets {
 
     export interface Packet {
-        type: string; // Use Snake Case
+        packet_type: string; // Use Snake Case
         [key: string]: unknown;
     }
 
     export interface ServerHandshake extends Packet {
-        type: 'server_handshake';
+        packet_type: 'server_handshake';
         name: string;
-        publicKey: string;
+        public_key: string;
         proof: string;
         /*
         proof is timestamp with server id signed.
-        example of decoded: 1727379076|ipOrDomain
+        example of decoded: unixtimestamp|ipOrDomain
         "|" being a delimiter.
         The server id is important so the handshake is server specific and cannot be replayed elsewhere.
         */
     }
 
     export interface Profile extends Packet {
-        type: 'profile';
+        packet_type: 'profile';
         name: string;
         id: number;
-        publicKey: string;
+        public_key: string;
     }
 
     export interface GuildMessage extends Packet {
-        type: 'guild_message';
-        channelId: number;
-        senderId: number;
-        message: string;
-        id?: number; // server authority
+        packet_type: 'guild_message';
+        channel_id: number;
+        sender_id: number;
+        message: string; // unixtimestamp|message
+        id?: number; // (server authoritative)
     }
 
     export interface ChannelInfo extends Packet {
-        type: 'channel_info';
+        packet_type: 'channel_info';
         name: string;
         id: number;
-        // TODO: add channel type
+        channel_type: 'text' | 'voice' | 'html';
+        /*
+        html is my version of what would be considered an announcement channel but supports html (no js)
+        */
     }
 
     export interface ServerInfo extends Packet {
-        type: 'server_info';
+        packet_type: 'server_info';
         profiles: {
             name: string;
             id: number;
@@ -55,10 +58,10 @@ export namespace WSPackets {
     }
 
     export interface SystemMessage extends Packet {
-        type: 'system_message';
+        packet_type: 'system_message';
         severity: 'info' | 'warning' | 'danger';
         message: string;
-        channelId?: number;
+        channel_id?: number;
     }
 
     interface PacketMap {
@@ -70,8 +73,8 @@ export namespace WSPackets {
         system_message: SystemMessage;
     }
 
-    export function isPacket<T extends keyof PacketMap>(packet: Packet, type: T): packet is PacketMap[T] {
-        return packet.type === type;
+    export function isPacket<T extends keyof PacketMap>(packet: Packet, packet_type: T): packet is PacketMap[T] {
+        return packet.packet_type === packet_type;
     }
 
 }

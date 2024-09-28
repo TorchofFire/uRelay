@@ -19,12 +19,12 @@ class MessageManagerService {
     public async handle(data: WebSocket.RawData, userId: number): Promise<void> {
         if (!Buffer.isBuffer(data)) {
             this.sendError(userId, {
-                type: 'system_message',
+                packet_type: 'system_message',
                 severity: 'danger',
                 message: 'Expected a buffer. The last packet sent has been discarded.'
             });
             return;
-        } // always expecting type Buffer
+        }
         const packet = JSON.parse(data.toString());
 
         if (WSPackets.isPacket(packet, 'guild_message')) await this.handleGuildMessage(packet, userId);
@@ -42,7 +42,7 @@ class MessageManagerService {
         const channel = guildService.channels.find(x => x.id === packet.channelId);
         if (!channel) {
             this.sendError(userId, {
-                type: 'system_message',
+                packet_type: 'system_message',
                 severity: 'warning',
                 message: 'This channel appears to no longer exist'
             });
@@ -68,7 +68,7 @@ class MessageManagerService {
         const packet = JSON.parse(data.toString());
         if (!WSPackets.isPacket(packet, 'server_handshake')) return { errorMessage: 'Expected a handshake.' };
 
-        const publicKey: Uint8Array = sodium.from_base64(packet.publicKey);
+        const publicKey: Uint8Array = sodium.from_base64(packet.public_key);
         const message: Uint8Array = sodium.from_base64(packet.proof);
 
         const unlockedMessage = sodium.to_string(sodium.crypto_sign_open(message, publicKey));
@@ -81,7 +81,7 @@ class MessageManagerService {
         const now = moment();
         if (now.diff(timestamp, 'seconds') > 30) return { errorMessage: 'The timestamp recieved falls outside the expected range. Check that your computer clock is correct.' };
 
-        const user = guildService.users.find(x => x.public_key === packet.publicKey);
+        const user = guildService.users.find(x => x.public_key === packet.public_key);
         if (user) return { userId: user.id };
 
         // New user. Add to DB and give resulting id.
@@ -90,21 +90,21 @@ class MessageManagerService {
         INSERT INTO users (public_key, name) 
         VALUES (?, ?);
         `;
-        const [result] = await dbConnectionPool.query<ResultSetHeader>(userInsert, [packet.publicKey, packet.name]);
+        const [result] = await dbConnectionPool.query<ResultSetHeader>(userInsert, [packet.public_key, packet.name]);
         const userId = result.insertId;
 
         guildService.users.push({
             id: userId,
             name: packet.name,
-            public_key: packet.publicKey,
+            public_key: packet.public_key,
             join_date: moment().unix()
         });
 
         const profilePacket: WSPackets.Profile = {
-            type: 'profile',
+            packet_type: 'profile',
             id: userId,
             name: packet.name,
-            publicKey: packet.publicKey
+            public_key: packet.public_key
         };
 
         await this.sendPacketToAllConnections(profilePacket);
