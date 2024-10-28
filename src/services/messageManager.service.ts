@@ -39,7 +39,7 @@ class MessageManagerService {
     }
 
     private async handleGuildMessage(packet: WSPackets.GuildMessage, userId: number): Promise<void> {
-        const channel = guildService.channels.find(x => x.id === packet.channelId);
+        const channel = guildService.channels.find(x => x.id === packet.channel_id);
         if (!channel) {
             this.sendError(userId, {
                 packet_type: 'system_message',
@@ -56,7 +56,7 @@ class MessageManagerService {
         VALUES (?, ?, ?);
         `;
         const [result] = await dbConnectionPool.query<ResultSetHeader>(guildMessageInsert, [
-            packet.senderId, packet.message, packet.channelId
+            packet.sender_id, packet.message, packet.channel_id
         ]);
         const messageId = result.insertId;
 

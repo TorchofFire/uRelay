@@ -73,8 +73,8 @@ export namespace WSPackets {
         system_message: SystemMessage;
     }
 
-    export function isPacket<T extends keyof PacketMap>(packet: Packet, packet_type: T): packet is PacketMap[T] {
-        return packet.packet_type === packet_type;
+    export function isPacket<T extends keyof PacketMap>(packet: Packet, type: T): packet is PacketMap[T] {
+        return packet.packet_type === type;
     }
 
 }

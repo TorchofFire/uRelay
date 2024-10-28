@@ -1,7 +1,6 @@
 import { WebSocket } from 'ws';
 import { dbConnectionPool } from '../startup';
 import { DB } from '../types/database.namespace';
-import { warn } from 'console';
 import { WSPackets } from '../types/packet.namespace';
 
 class GuildService {
@@ -17,7 +16,7 @@ class GuildService {
         const usersQuery = 'SELECT * FROM users;';
         const users = (await dbConnectionPool.query(usersQuery))[0] as DB.users[] | undefined;
         if (!users) throw new Error('Could not fetch users!!!');
-        if (users.length === 0) warn('Database fetch successful but it appears the users list is empty!');
+        if (users.length === 0) console.warn('Database fetch successful but it appears the users list is empty!');
         this.users = users;
     }
 
@@ -25,7 +24,7 @@ class GuildService {
         const channelsQuery = 'SELECT * FROM guild_channels;';
         const channels = (await dbConnectionPool.query(channelsQuery))[0] as DB.guild_channels[] | undefined;
         if (!channels) throw new Error('Could not fetch channels!!!');
-        if (channels.length === 0) warn('Database fetch successful but it appears the channels list is empty!');
+        if (channels.length === 0) console.warn('Database fetch successful but it appears the channels list is empty!');
         this.channels = channels;
     }
 
