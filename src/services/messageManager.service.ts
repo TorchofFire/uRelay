@@ -49,7 +49,25 @@ class MessageManagerService {
             return;
         }
 
-        // TODO: verify sig and reject timestamps within msgs that are too old
+        const publicKey = guildService.users.find(user => user.id === userId)?.public_key;
+        if (!publicKey) {
+            this.sendError(userId, {
+                packet_type: 'system_message',
+                severity: 'danger',
+                message: 'Server error. Couldn\'t find public key. Please try reconnecting.'
+            });
+            return;
+        }
+
+        const unlocked = this.unlockAndVerifySignedMessage(publicKey, packet.message);
+        if (unlocked.error) {
+            this.sendError(userId, {
+                packet_type: 'system_message',
+                severity: 'danger',
+                message: `Your message didn't satisfy security requirements | ${unlocked.error}`
+            });
+            return;
+        }
 
         const guildMessageInsert = `
         INSERT INTO guild_messages (sender_id, message, channel_id)
@@ -68,18 +86,11 @@ class MessageManagerService {
         const packet = JSON.parse(data.toString());
         if (!WSPackets.isPacket(packet, 'server_handshake')) return { errorMessage: 'Expected a handshake.' };
 
-        const publicKey: Uint8Array = sodium.from_base64(packet.public_key);
-        const message: Uint8Array = sodium.from_base64(packet.proof);
-
-        const unlockedMessage = sodium.to_string(sodium.crypto_sign_open(message, publicKey));
-        const [stringTimestamp, serverId] = unlockedMessage.split('|');
+        const unlocked = this.unlockAndVerifySignedMessage(packet.public_key, packet.proof);
+        if (unlocked.error) return { errorMessage: unlocked.error };
+        const serverId = unlocked.message;
 
         if (serverId !== appConfig.serverName) return { errorMessage: `Expected a server identifier. Looking for "${appConfig.serverName}", instead got "${serverId}". Format is timestamp|serverId.` };
-
-        if (Number.isNaN(Number(stringTimestamp))) return { errorMessage: 'Expected a unix timestamp. Format is timestamp|serverId' };
-        const timestamp = moment.unix(Number(stringTimestamp));
-        const now = moment();
-        if (now.diff(timestamp, 'seconds') > 30) return { errorMessage: 'The timestamp recieved falls outside the expected range. Check that your computer clock is correct.' };
 
         const user = guildService.users.find(x => x.public_key === packet.public_key);
         if (user) return { userId: user.id };
@@ -111,6 +122,21 @@ class MessageManagerService {
         // note: didn't send to this connection (intended)
 
         return { userId };
+    }
+
+    public unlockAndVerifySignedMessage(publicKey: string, encryptedMessage: string, timestampTolerance?: number): {message?: string; error?: string} {
+        const uInt8publicKey: Uint8Array = sodium.from_base64(publicKey);
+        const uInt8message: Uint8Array = sodium.from_base64(encryptedMessage);
+
+        const unlockedMessage = sodium.to_string(sodium.crypto_sign_open(uInt8message, uInt8publicKey));
+        const [stringTimestamp, payload] = unlockedMessage.split('|');
+
+        if (Number.isNaN(Number(stringTimestamp))) return { error: 'Expected a unix timestamp. Format is timestamp|...' };
+        const timestamp = moment.unix(Number(stringTimestamp));
+        const now = moment();
+        if (now.diff(timestamp, 'seconds') > (timestampTolerance ?? 30)) return { error: 'The timestamp recieved falls outside the expected range. Check that your device clock is correct.' };
+
+        return { message: payload };
     }
 
 }
