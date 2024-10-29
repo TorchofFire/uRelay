@@ -131,7 +131,7 @@ class MessageManagerService {
         const unlockedMessage = sodium.to_string(sodium.crypto_sign_open(uInt8message, uInt8publicKey));
         const [stringTimestamp, payload] = unlockedMessage.split('|');
 
-        if (Number.isNaN(Number(stringTimestamp))) return { error: 'Expected a unix timestamp. Format is timestamp|...' };
+        if (Number.isNaN(Number(stringTimestamp))) return { error: 'Expected a unix timestamp. Format is timestamp|message for messages or timestamp|serverId for handshakes' };
         const timestamp = moment.unix(Number(stringTimestamp));
         const now = moment();
         if (now.diff(timestamp, 'seconds') > (timestampTolerance ?? 30)) return { error: 'The timestamp recieved falls outside the expected range. Check that your device clock is correct.' };
