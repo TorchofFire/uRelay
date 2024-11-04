@@ -33,7 +33,7 @@ class ConnectionManagerService {
                 }
                 userId = hsResponse.userId;
                 this.addNewConnection(userId, ws);
-                guildService.sendServerInfo(ws);
+                guildService.sendGuildInfo(ws);
                 firstPacketRecieved = true;
                 return;
             }

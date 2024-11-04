@@ -18,7 +18,7 @@ export const channelPermission = (req: express.Request, res: express.Response, n
     if (!unlocked.message) return res.status(400).json({ error: unlocked.error });
     const serverId = unlocked.message;
 
-    if (serverId !== appConfig.serverName) return res.status(400).json({ error: `Expected a server identifier within signed proof. Looking for "${appConfig.serverName}", instead got "${serverId}". Format is timestamp|serverId.` });
+    if (serverId !== appConfig.serverId) return res.status(400).json({ error: `Expected a server identifier within signed proof. Looking for "${appConfig.serverId}", instead got "${serverId}". Format is timestamp|serverId.` });
 
     // TODO: add perms to check if user can GET for this specific channel id
 

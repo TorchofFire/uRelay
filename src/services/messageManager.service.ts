@@ -90,7 +90,7 @@ class MessageManagerService {
         if (unlocked.error) return { errorMessage: unlocked.error };
         const serverId = unlocked.message;
 
-        if (serverId !== appConfig.serverName) return { errorMessage: `Expected a server identifier. Looking for "${appConfig.serverName}", instead got "${serverId}". Format is timestamp|serverId.` };
+        if (serverId !== appConfig.serverId) return { errorMessage: `Expected a server identifier. Looking for "${appConfig.serverId}", instead got "${serverId}". Format is timestamp|serverId.` };
 
         const user = guildService.users.find(x => x.public_key === packet.public_key);
         if (user) return { userId: user.id };

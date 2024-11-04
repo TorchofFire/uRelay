@@ -28,13 +28,13 @@ class GuildService {
         this.channels = channels;
     }
 
-    public sendServerInfo(ws: WebSocket): void {
-        const serverInfoPacket: WSPackets.ServerInfo = {
-            packet_type: 'server_info',
+    public sendGuildInfo(ws: WebSocket): void {
+        const guildInfoPacket: WSPackets.GuildInfo = {
+            packet_type: 'guild_info',
             channels: this.channels,
             profiles: this.users.map(user => { return { id: user.id, name: user.name, publicKey: user.public_key }; })
         };
-        ws.send(JSON.stringify(serverInfoPacket));
+        ws.send(JSON.stringify(guildInfoPacket));
     }
 }
 

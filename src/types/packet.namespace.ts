@@ -44,8 +44,8 @@ export namespace WSPackets {
         */
     }
 
-    export interface ServerInfo extends Packet {
-        packet_type: 'server_info';
+    export interface GuildInfo extends Packet {
+        packet_type: 'guild_info';
         profiles: {
             name: string;
             id: number;
@@ -69,12 +69,12 @@ export namespace WSPackets {
         profile: Profile;
         guild_message: GuildMessage;
         channel_info: ChannelInfo;
-        server_info: ServerInfo;
+        guild_info: GuildInfo;
         system_message: SystemMessage;
     }
 
-    export function isPacket<T extends keyof PacketMap>(packet: Packet, type: T): packet is PacketMap[T] {
-        return packet.packet_type === type;
+    export function isPacket<T extends keyof PacketMap>(packet: Packet, packet_type: T): packet is PacketMap[T] {
+        return packet.packet_type === packet_type;
     }
 
 }
