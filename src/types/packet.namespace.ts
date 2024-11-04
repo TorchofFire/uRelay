@@ -46,6 +46,7 @@ export namespace WSPackets {
 
     export interface GuildInfo extends Packet {
         packet_type: 'guild_info';
+        // TODO: support guild_name. This obviously means adding it to DB and later an endpoint for modification.
         profiles: {
             name: string;
             id: number;
