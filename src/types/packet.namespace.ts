@@ -40,13 +40,14 @@ export namespace WSPackets {
         id: number;
         channel_type: 'text' | 'voice' | 'html';
         /*
-        html is my version of what would be considered an announcement channel but supports html (no js)
+        html is my version of what would be considered an announcement channel but supports html (js not supported on early client)
         */
     }
 
     export interface GuildInfo extends Packet {
         packet_type: 'guild_info';
         // TODO: support guild_name. This obviously means adding it to DB and later an endpoint for modification.
+        // TODO: add roles
         profiles: {
             name: string;
             id: number;
