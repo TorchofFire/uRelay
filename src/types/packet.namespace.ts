@@ -1,3 +1,4 @@
+import { ChannelType } from './channel.type';
 
 export namespace WSPackets {
 
@@ -38,10 +39,7 @@ export namespace WSPackets {
         packet_type: 'channel_info';
         name: string;
         id: number;
-        channel_type: 'text' | 'voice' | 'html';
-        /*
-        html is my version of what would be considered an announcement channel but supports html (js not supported on early client)
-        */
+        channel_type: ChannelType;
     }
 
     export interface GuildInfo extends Packet {

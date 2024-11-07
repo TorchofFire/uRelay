@@ -1,3 +1,4 @@
+import { ChannelType } from './channel.type';
 
 export namespace DB {
     export interface users {
@@ -9,6 +10,7 @@ export namespace DB {
     export interface guild_channels {
         id: number;
         name: string;
+        channel_type: ChannelType;
     }
     export interface guild_messages {
         id: number;
