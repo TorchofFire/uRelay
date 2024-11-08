@@ -71,7 +71,7 @@ const initDbConnectionPool = (): void => {
     dbConnectionPool = mysql.createPool({
         host: appConfig.dbHost,
         user: appConfig.dbUser,
-        database: 'freedom',
+        database: 'uRelay',
         password: appConfig.dbPassword
     });
     console.log('\x1b[36mDatabase Connection Pool initialized\x1b[0m');
