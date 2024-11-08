@@ -3,7 +3,7 @@ import appConfig from '../app.config';
 import { guildService } from '../services/guild.service';
 import { messageManagerService } from '../services/messageManager.service';
 
-export const permission = (req: express.Request, res: express.Response, next: express.NextFunction): express.Response | void => {
+export const requiresOnline = (req: express.Request, res: express.Response, next: express.NextFunction): express.Response | void => {
     const { requester, proof } = req.headers;
 
     if (!requester || typeof requester !== 'string') return res.status(401).json({ error: 'Requester ID was not provided in the header', expectedFormat: 'requester: number' });

@@ -1,10 +1,10 @@
 import express from 'express';
 import { DB } from '../types/database.namespace';
 import { dbConnectionPool } from '../startup';
-import { permission } from '../middleware/permission.middleware';
+import { requiresOnline } from '../middleware/requiresOnline.middleware';
 const route = express.Router();
 
-route.get('/text-channel/:id', permission, async (req, res): Promise<express.Response | void> => {
+route.get('/text-channel/:id', requiresOnline, async (req, res): Promise<express.Response | void> => {
     const channelId = req.params.id;
     if (!channelId) return res.status(400).json({ error: 'Channel ID is required in params' });
     // TODO: add perms to check if user can GET for this *specific* channel id
