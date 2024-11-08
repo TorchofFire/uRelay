@@ -3,11 +3,9 @@ import appConfig from '../app.config';
 import { guildService } from '../services/guild.service';
 import { messageManagerService } from '../services/messageManager.service';
 
-export const channelPermission = (req: express.Request, res: express.Response, next: express.NextFunction): express.Response | void => {
+export const permission = (req: express.Request, res: express.Response, next: express.NextFunction): express.Response | void => {
     const { requester, proof } = req.headers;
-    const channelId = req.params.id;
 
-    if (!channelId) return res.status(400).json({ error: 'Channel ID is required in params' });
     if (!requester || typeof requester !== 'string') return res.status(401).json({ error: 'Requester ID was not provided in the header', expectedFormat: 'requester: number' });
     if (!proof || typeof proof !== 'string') return res.status(401).json({ error: 'Proof of requester auth was not provided in the header', expectedFormat: 'proof: string' });
 
@@ -19,8 +17,6 @@ export const channelPermission = (req: express.Request, res: express.Response, n
     const serverId = unlocked.message;
 
     if (serverId !== appConfig.serverId) return res.status(400).json({ error: `Expected a server identifier within signed proof. Looking for "${appConfig.serverId}", instead got "${serverId}". Format is timestamp|serverId.` });
-
-    // TODO: add perms to check if user can GET for this specific channel id
 
     return next();
 };

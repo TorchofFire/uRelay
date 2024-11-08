@@ -10,15 +10,9 @@ import appConfig from '../app.config';
 
 class MessageManagerService {
 
-    private sendError(userId: number, packet: WSPackets.SystemMessage): void {
-        const ws = connectionManagerService.connectionMap.get(userId);
-        if (!ws) return;
-        ws.send(JSON.stringify(packet));
-    }
-
     public async handle(data: WebSocket.RawData, userId: number): Promise<void> {
         if (!Buffer.isBuffer(data)) {
-            this.sendError(userId, {
+            guildService.sendSystemMessage(userId, {
                 packet_type: 'system_message',
                 severity: 'danger',
                 message: 'Expected a buffer. The last packet sent has been discarded.'
@@ -41,7 +35,7 @@ class MessageManagerService {
     private async handleGuildMessage(packet: WSPackets.GuildMessage, userId: number): Promise<void> {
         const channel = guildService.channels.find(x => x.id === packet.channel_id);
         if (!channel) {
-            this.sendError(userId, {
+            guildService.sendSystemMessage(userId, {
                 packet_type: 'system_message',
                 severity: 'warning',
                 message: 'This channel appears to no longer exist'
@@ -51,7 +45,7 @@ class MessageManagerService {
 
         const publicKey = guildService.users.find(user => user.id === userId)?.public_key;
         if (!publicKey) {
-            this.sendError(userId, {
+            guildService.sendSystemMessage(userId, {
                 packet_type: 'system_message',
                 severity: 'danger',
                 message: 'Server error. Couldn\'t find public key. Please try reconnecting.'
@@ -61,7 +55,7 @@ class MessageManagerService {
 
         const unlocked = this.unlockAndVerifySignedMessage(publicKey, packet.message);
         if (unlocked.error) {
-            this.sendError(userId, {
+            guildService.sendSystemMessage(userId, {
                 packet_type: 'system_message',
                 severity: 'danger',
                 message: `Your message didn't satisfy security requirements | ${unlocked.error}`

@@ -1,11 +1,14 @@
 import express from 'express';
 import { DB } from '../types/database.namespace';
 import { dbConnectionPool } from '../startup';
-import { channelPermission } from '../middleware/channelPermission.middleware';
+import { permission } from '../middleware/permission.middleware';
 const route = express.Router();
 
-route.get('/text-channel/:id', channelPermission, async (req, res): Promise<express.Response | void> => {
+route.get('/text-channel/:id', permission, async (req, res): Promise<express.Response | void> => {
     const channelId = req.params.id;
+    if (!channelId) return res.status(400).json({ error: 'Channel ID is required in params' });
+    // TODO: add perms to check if user can GET for this *specific* channel id
+
     const fetchFromMsgId = req.query.msg;
 
     const queryParams = [channelId];

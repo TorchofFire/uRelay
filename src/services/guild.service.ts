@@ -1,7 +1,7 @@
-import { WebSocket } from 'ws';
 import { dbConnectionPool } from '../startup';
 import { DB } from '../types/database.namespace';
 import { WSPackets } from '../types/packet.namespace';
+import { connectionManagerService } from './connectionManager.service';
 
 class GuildService {
     users: DB.users[] = [];
@@ -28,13 +28,10 @@ class GuildService {
         this.channels = channels;
     }
 
-    public sendGuildInfo(ws: WebSocket): void {
-        const guildInfoPacket: WSPackets.GuildInfo = {
-            packet_type: 'guild_info',
-            channels: this.channels,
-            profiles: this.users.map(user => { return { id: user.id, name: user.name, publicKey: user.public_key }; })
-        };
-        ws.send(JSON.stringify(guildInfoPacket));
+    public sendSystemMessage(userId: number, packet: WSPackets.SystemMessage): void {
+        const ws = connectionManagerService.connectionMap.get(userId);
+        if (!ws) return;
+        ws.send(JSON.stringify(packet));
     }
 }
 

@@ -42,21 +42,6 @@ export namespace WSPackets {
         channel_type: ChannelType;
     }
 
-    export interface GuildInfo extends Packet {
-        packet_type: 'guild_info';
-        // TODO: support guild_name. This obviously means adding it to DB and later an endpoint for modification.
-        // TODO: add roles
-        profiles: {
-            name: string;
-            id: number;
-            publicKey: string;
-        }[];
-        channels: {
-            name: string;
-            id: number;
-        }[];
-    }
-
     export interface SystemMessage extends Packet {
         packet_type: 'system_message';
         severity: 'info' | 'warning' | 'danger';
@@ -69,7 +54,6 @@ export namespace WSPackets {
         profile: Profile;
         guild_message: GuildMessage;
         channel_info: ChannelInfo;
-        guild_info: GuildInfo;
         system_message: SystemMessage;
     }
 
