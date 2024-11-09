@@ -17,6 +17,8 @@ export default tseslint.config(
       quotes: ['error', 'single', { avoidEscape: true }],
       'no-trailing-spaces': 'error',
       'no-multiple-empty-lines': ['error', { max: 1, maxEOF: 0 }],
+      'semi': ['error', 'always'],
+      'no-useless-return': 'error',
       '@typescript-eslint/no-invalid-void-type': 'off',
       '@typescript-eslint/no-misused-promises': 'off',
       '@typescript-eslint/no-unsafe-assignment': 'off',

@@ -4,9 +4,12 @@ import { dbConnectionPool } from '../startup';
 import { requiresOnline } from '../middleware/requiresOnline.middleware';
 const route = express.Router();
 
-route.get('/text-channel/:id', requiresOnline, async (req, res): Promise<express.Response | void> => {
+route.get('/text-channel/:id', requiresOnline, async (req, res): Promise<void> => {
     const channelId = req.params.id;
-    if (!channelId) return res.status(400).json({ error: 'Channel ID is required in params' });
+    if (!channelId) {
+        res.status(400).json({ error: 'Channel ID is required in params' });
+        return;
+    }
     // TODO: add perms to check if user can GET for this *specific* channel id
 
     const fetchFromMsgId = req.query.msg;
@@ -23,9 +26,12 @@ route.get('/text-channel/:id', requiresOnline, async (req, res): Promise<express
     }
     messagesQuery += ' ORDER BY id ASC LIMIT 15';
     const messages = (await dbConnectionPool.query(messagesQuery, queryParams))[0] as DB.guild_messages[] | undefined;
-    if (!messages) return res.status(500).json({ error: `Could not fetch messages from database. Channel: ${channelId}` });
+    if (!messages) {
+        res.status(500).json({ error: `Could not fetch messages from database. Channel: ${channelId}` });
+        return;
+    }
 
-    return res.json(messages);
+    res.json(messages);
 });
 
 export default route;
