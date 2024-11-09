@@ -8,8 +8,8 @@ class GuildService {
     channels: DB.guild_channels[] = [];
 
     public async init(): Promise<void> {
-        this.updateUsersCache();
-        this.updateChannelsCache();
+        await this.updateUsersCache();
+        await this.updateChannelsCache();
     }
 
     private async updateUsersCache(): Promise<void> {

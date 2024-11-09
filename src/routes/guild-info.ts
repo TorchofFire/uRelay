@@ -3,7 +3,7 @@ import { guildService } from '../services/guild.service';
 import { connectionManagerService } from '../services/connectionManager.service';
 const route = express.Router();
 
-route.get('/guild-info', async (_req, res): Promise<express.Response | void> => {
+route.get('/guild-info', (_req, res): express.Response => {
     const guildInfo = {
         name: '', // TODO: add guild name, version and image links
         version: '',

@@ -3,7 +3,7 @@ import { guildService } from '../services/guild.service';
 import { requiresOnline } from '../middleware/requiresOnline.middleware';
 const route = express.Router();
 
-route.get('/profile/:id', requiresOnline, async (req, res): Promise<express.Response | void> => {
+route.get('/profile/:id', requiresOnline, (req, res): express.Response => {
     const userIdParam = req.params.id;
     if (!userIdParam) return res.status(400).json({ error: 'User ID is required in params. Csv accepted.' });
     const userIds = userIdParam.split(',');

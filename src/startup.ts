@@ -9,9 +9,7 @@ import { WebSocketServer } from 'ws';
 import { guildService } from './services/guild.service';
 import { connectionManagerService } from './services/connectionManager.service';
 
-// eslint-disable-next-line import/no-mutable-exports
 export let expressApp: express.Express;
-// eslint-disable-next-line import/no-mutable-exports
 export let dbConnectionPool: mysql.Pool;
 
 const registerExpressRoutes = async (): Promise<void> => {

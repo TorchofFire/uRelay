@@ -1,3 +1,3 @@
 import { startup } from './startup';
 
-startup();
+void startup();

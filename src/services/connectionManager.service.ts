@@ -4,7 +4,7 @@ import { guildService } from './guild.service';
 
 class ConnectionManagerService {
     connections: WebSocket[] = [];
-    connectionMap: Map<number, WebSocket> = new Map();
+    connectionMap = new Map<number, WebSocket>();
 
     private addNewConnection(userId: number, ws: WebSocket): void {
         if (this.connectionMap.has(userId)) return;
@@ -42,7 +42,7 @@ class ConnectionManagerService {
                 return;
             }
             if (!userId) return;
-            messageManagerService.handle(message, userId);
+            void messageManagerService.handle(message, userId);
         });
 
         ws.on('close', () => { if (userId) this.removeConnection(userId); });

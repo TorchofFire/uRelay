@@ -3,7 +3,7 @@ import { guildService } from '../services/guild.service';
 import { requiresOnline } from '../middleware/requiresOnline.middleware';
 const route = express.Router();
 
-route.get('/users', requiresOnline, async (_req, res): Promise<express.Response | void> => {
+route.get('/users', requiresOnline, (_req, res): express.Response | void => {
     const users = guildService.users.map(user => {
         return {
             id: user.id,
